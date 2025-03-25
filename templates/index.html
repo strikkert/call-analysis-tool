@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcriptie Analyse Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        #results {
+            margin-top: 30px;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Transcriptie Analyse Tool</h1>
+        
+        <div class="upload-area" id="dropZone">
+            <input type="file" id="fileInput" accept=".xlsx" style="display: none;">
+            <div class="mb-3">
+                <i class="bi bi-cloud-upload fs-1"></i>
+                <h4>Sleep uw Excel bestand hier</h4>
+                <p class="text-muted">of klik om te selecteren</p>
+                <p class="text-muted small">Alleen .xlsx bestanden met een 'transcript' kolom zijn toegestaan</p>
+            </div>
+        </div>
+
+        <div class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Laden...</span>
+            </div>
+            <p class="mt-2">Bezig met analyseren...</p>
+        </div>
+
+        <div id="results" class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Analyse Resultaten</h5>
+            </div>
+            <div class="card-body">
+                <ul id="topicsList" class="list-group list-group-flush">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.querySelector('.loading');
+        const results = document.getElementById('results');
+        const topicsList = document.getElementById('topicsList');
+
+        // Click to upload
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#0d6efd';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#dee2e6';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#dee2e6';
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.xlsx')) {
+                alert('Alleen Excel bestanden (.xlsx) zijn toegestaan');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading, hide results
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            topicsList.innerHTML = '';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Display results
+                results.style.display = 'block';
+                data.topics.forEach(topic => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = topic;
+                    topicsList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                alert('Er is een fout opgetreden bij het verwerken van het bestand');
+            });
+        }
+    </script>
+</body>
+</html> 
