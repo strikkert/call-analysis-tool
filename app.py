@@ -8,9 +8,8 @@ from sklearn.cluster import KMeans
 import os
 from werkzeug.utils import secure_filename
 
-# Download benodigde NLTK data
-nltk.download('punkt')
-nltk.download('stopwords')
+# Gebruik lokale NLTK data
+nltk.data.path.append('./nltk_data')
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
