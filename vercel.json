@@ -11,10 +11,5 @@
             "src": "/(.*)",
             "dest": "app.py"
         }
-    ],
-    "env": {
-        "EMAIL_USER": "@email_user",
-        "EMAIL_PASSWORD": "@email_password",
-        "EXCEL_PATH": "@excel_path"
-    }
+    ]
 } 
